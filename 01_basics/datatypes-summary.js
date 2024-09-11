@@ -40,4 +40,5 @@ console.log(typeof isLoggedIn);
 console.log(typeof scoreValue);
 console.log(typeof myFunction);
 console.log(typeof myObj);
+console.log(typeof heros);
 
