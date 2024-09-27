@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <title>Login #1 | AsmrProg</title>
+</head>
+<body>
+    <div class="login-card">
+        <h2>Login</h2>
+        <h3>Enter your credentials</h3>
+
+        <!-- Added 'id' attributes to form and input fields for JavaScript access -->
+        <form class="login-form" id="login-form">
+            <input type="text" id="username" placeholder="Username">
+            <input type="password" id="password" placeholder="Password">
+            <a href="#">Forget your password?</a>
+            <button type="submit">LOGIN</button>
+        </form>
+        <!-- Error message container -->
+        <p id="error-message" class="error-message"></p>
+    </div>
+
+    <!-- Linking the JavaScript file -->
+    <script src="app.js"></script>
+</body>
+</html>
