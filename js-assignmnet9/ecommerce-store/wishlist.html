@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your Wishlist</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-gray-100">
+
+    <!-- Header -->
+    <header class="bg-white shadow py-4">
+        <div class="container mx-auto px-4 flex justify-between items-center">
+            <h1 class="text-3xl font-bold text-gray-800">Your Wishlist</h1>
+            <a href="index.html" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition duration-300">
+                Back to Store
+            </a>
+        </div>
+    </header>
+
+    <!-- Wishlist Items Container -->
+    <main class="container mx-auto px-4 mt-8">
+        <div id="wishlist-items" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+    </main>
+
+    <script>
+        const loadWishlistItems = () => {
+            const wishlistItems = JSON.parse(localStorage.getItem('wishlist')) || [];
+            const wishlistItemsContainer = document.getElementById('wishlist-items');
+
+            wishlistItemsContainer.innerHTML = ''; // Clear existing items
+
+            wishlistItems.forEach(item => {
+                const itemElement = document.createElement('div');
+                itemElement.classList.add('bg-white', 'p-4', 'rounded-lg', 'shadow-md', 'hover:shadow-lg', 'transition-shadow', 'duration-300', 'ease-in-out');
+                itemElement.innerHTML = `
+                    <div class="flex items-center">
+                        <img src="${item.thumbnail}" alt="${item.title}" class="w-16 h-16 object-cover rounded-lg">
+                        <div class="ml-4">
+                            <h2 class="text-lg font-semibold text-gray-700">${item.title}</h2>
+                            <button class="remove-wishlist-item mt-2 bg-red-500 text-white px-4 py-1 rounded hover:bg-red-600" data-id="${item.id}">
+                                Remove
+                            </button>
+                        </div>
+                    </div>
+                `;
+                wishlistItemsContainer.appendChild(itemElement);
+            });
+
+            attachRemoveEventListeners();
+        };
+
+        const attachRemoveEventListeners = () => {
+            const removeButtons = document.querySelectorAll('.remove-wishlist-item');
+            removeButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    const productId = button.getAttribute('data-id');
+                    removeFromWishlist(productId);
+                });
+            });
+        };
+
+        const removeFromWishlist = (id) => {
+            let wishlist = JSON.parse(localStorage.getItem('wishlist')) || [];
+            wishlist = wishlist.filter(item => item.id !== id); // Remove item from wishlist
+            localStorage.setItem('wishlist', JSON.stringify(wishlist)); // Update localStorage
+            loadWishlistItems(); // Reload wishlist items
+        };
+
+        // Load wishlist items when the page loads
+        window.onload = loadWishlistItems;
+    </script>
+
+</body>
+
+</html>

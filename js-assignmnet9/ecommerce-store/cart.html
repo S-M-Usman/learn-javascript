@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checkout</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-black">
+    <!-- Header Section with Back to Store Button -->
+    <header class="bg-white shadow-sm py-4">
+        <div class="container mx-auto flex justify-between items-center px-4">
+            <h1 class="text-2xl font-bold">Checkout</h1>
+            <!-- Back to Store Button -->
+            <a href="index.html" class="bg-black text-amber-500 py-2 px-4 rounded hover:bg-amber-500 hover:text-black">
+                Back to Store
+            </a>
+        </div>
+    </header>
+
+    <!-- Main Checkout Section -->
+    <main class="container mx-auto mt-8 grid grid-cols-1 md:grid-cols-2 gap-8 px-4">
+        <!-- Left Column: Cart Items & Summary -->
+        <div class="bg-white p-6 rounded-lg shadow-md">
+            <h2 class="text-xl font-bold mb-4">Your Cart</h2>
+            <div id="cart-items"></div>
+            <div class="mt-4 text-right">
+                <p class="text-xl">Total: $<span id="total-price">0</span></p>
+            </div>
+            <div class="mt-6 flex justify-between">
+                <!-- Back to Store Button (if needed in the column too) -->
+                <a href="index.html" class="bg-black text-amber-500 py-2 px-4 rounded hover:bg-amber-500 hover:text-black">
+                    Back to Store
+                </a>
+            </div>
+        </div>
+
+        <!-- Right Column: Checkout Form -->
+        <div class="bg-white p-6 rounded-lg shadow-md">
+            <h2 class="text-xl font-bold mb-4">Shipping Information</h2>
+            <form id="checkout-form">
+                <div class="grid grid-cols-1 gap-4">
+                    <input type="text" placeholder="Full Name" class="border p-2 rounded w-full" required>
+                    <input type="email" placeholder="Email" class="border p-2 rounded w-full" required>
+                    <input type="tel" placeholder="Phone Number" class="border p-2 rounded w-full" required>
+                    <input type="text" placeholder="Address" class="border p-2 rounded w-full" required>
+                    <input type="text" placeholder="City" class="border p-2 rounded w-full" required>
+                </div>
+                <h3 class="text-lg font-bold mt-4">Payment Method</h3>
+                <div class="mt-2">
+                    <label class="inline-flex items-center">
+                        <input type="radio" name="payment" value="COD" class="form-radio" checked>
+                        <span class="ml-2">Cash on Delivery</span>
+                    </label>
+                </div>
+                <button type="submit" class="bg-amber-500 text-white mt-6 py-2 px-4 rounded w-full hover:bg-amber-800">Place Order</button>
+            </form>
+        </div>
+    </main>
+
+    <!-- Modal for Order Confirmation -->
+    <div id="order-modal" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 hidden">
+        <div class="bg-white p-6 rounded-lg shadow-md text-center">
+            <h2 class="text-2xl font-bold mb-4">Order Submitted Successfully!</h2>
+            <p id="order-summary" class="mb-4"></p>
+            <button id="close-modal" class="bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600">Exit</button>
+        </div>
+    </div>
+
+    <script>
+        // Load cart items and initialize form handling
+        const loadCartItems = () => {
+            const cartItems = JSON.parse(localStorage.getItem('cart')) || [];
+            const cartItemsContainer = document.getElementById('cart-items');
+            let total = 0;
+
+            cartItemsContainer.innerHTML = ''; // Clear existing items
+
+            cartItems.forEach(item => {
+                const itemElement = document.createElement('div');
+                itemElement.classList.add('flex', 'justify-between', 'items-center', 'border-b', 'pb-2', 'mb-2');
+                itemElement.innerHTML = `
+                    <img src="${item.thumbnail}" alt="${item.title}" class="w-16 h-16">
+                    <p>${item.title}</p>
+                    <div class="flex items-center space-x-2">
+                        <button class="decrement bg-gray-200 px-2 rounded" data-id="${item.id}">-</button>
+                        <span>${item.quantity}</span>
+                        <button class="increment bg-gray-200 px-2 rounded" data-id="${item.id}">+</button>
+                    </div>
+                    <p>$${item.price}</p>
+                    <button class="remove-item bg-red-500 text-white px-2 rounded" data-id="${item.id}">Remove</button>
+                `;
+                cartItemsContainer.appendChild(itemElement);
+                total += item.price * item.quantity; // Calculate total price
+            });
+
+            document.getElementById('total-price').textContent = total.toFixed(2);
+            attachCartEvents();
+        };
+
+        const attachCartEvents = () => {
+            const removeButtons = document.querySelectorAll('.remove-item');
+            removeButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    const productId = button.getAttribute('data-id');
+                    removeFromCart(productId);
+                });
+            });
+
+            const incrementButtons = document.querySelectorAll('.increment');
+            const decrementButtons = document.querySelectorAll('.decrement');
+
+            incrementButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    updateQuantity(button.getAttribute('data-id'), 1);
+                });
+            });
+
+            decrementButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    updateQuantity(button.getAttribute('data-id'), -1);
+                });
+            });
+        };
+
+        const updateQuantity = (id, delta) => {
+            let cart = JSON.parse(localStorage.getItem('cart')) || [];
+            cart = cart.map(item => {
+                if (item.id === id) {
+                    item.quantity = Math.max(1, item.quantity + delta); // Ensure quantity is never less than 1
+                }
+                return item;
+            });
+            localStorage.setItem('cart', JSON.stringify(cart));
+            loadCartItems();
+        };
+
+        const removeFromCart = (id) => {
+            let cart = JSON.parse(localStorage.getItem('cart')) || [];
+            cart = cart.filter(item => item.id !== id);
+            localStorage.setItem('cart', JSON.stringify(cart));
+            loadCartItems();
+        };
+
+        // Handle order submission
+        const form = document.getElementById('checkout-form');
+        form.addEventListener('submit', (event) => {
+            event.preventDefault();
+            const orderSummary = generateOrderSummary();
+            document.getElementById('order-summary').innerText = orderSummary;
+            document.getElementById('order-modal').classList.remove('hidden');
+        });
+
+        const generateOrderSummary = () => {
+            const cartItems = JSON.parse(localStorage.getItem('cart')) || [];
+            let summary = 'Order Summary:\n\n';
+            let total = 0;
+            cartItems.forEach(item => {
+                summary += `${item.title} x ${item.quantity} - $${(item.price * item.quantity).toFixed(2)}\n`;
+                total += item.price * item.quantity;
+            });
+            summary += `\nTotal: $${total.toFixed(2)}\nShipping: $5.00\nDelivery Time: 3-5 business days\n`;
+            return summary;
+        };
+
+        // Close modal and clear cart
+        const closeModalButton = document.getElementById('close-modal');
+        closeModalButton.addEventListener('click', () => {
+            document.getElementById('order-modal').classList.add('hidden');
+            localStorage.removeItem('cart'); // Clear cart
+            loadCartItems(); // Reload empty cart
+        });
+
+        window.onload = loadCartItems;
+    </script>
+</body>
+
+</html>
